@@ -1,45 +1,160 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Deepfake Detector</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- TailwindCSS CDN for styling -->
-    <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8">
+  <title>Deepfake Detector</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f0f4f8;
+      color: #333;
+      text-align: center;
+      padding: 40px;
+    }
+
+    h1 {
+      color: #2c3e50;
+    }
+
+    form {
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      display: inline-block;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+      margin-top: 20px;
+    }
+
+    input[type="file"] {
+      margin: 10px 0;
+      font-size: 16px;
+    }
+
+    button {
+      padding: 10px 20px;
+      background-color: #2980b9;
+      color: white;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background-color: #2471a3;
+    }
+
+    .result-section {
+      margin-top: 30px;
+      padding: 20px;
+      background-color: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .media-preview img,
+    .media-preview video {
+      max-width: 100%;
+      border-radius: 10px;
+      margin-top: 15px;
+    }
+
+    .confidence {
+      font-weight: bold;
+      color: #2c3e50;
+    }
+
+    #progress-bar {
+      margin-top: 20px;
+      display: none;
+    }
+
+    progress {
+      width: 100%;
+      height: 20px;
+    }
+
+    .explanation {
+      text-align: left;
+      margin-top: 20px;
+    }
+  </style>
 </head>
-<body class="bg-gray-100 text-gray-800">
-    <div class="min-h-screen flex items-center justify-center">
-        <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-lg">
-            <h1 class="text-3xl font-bold mb-6 text-center text-indigo-600">🕵️‍♂️ Deepfake Detector</h1>
+<body>
+  <h1>Deepfake Detector 🔍</h1>
 
-            <form method="POST" enctype="multipart/form-data" class="space-y-6">
-                {% csrf_token %}
+  <form method="post" enctype="multipart/form-data" id="upload-form">
+    {% csrf_token %}
+    <p><strong>Select an image or video to analyze:</strong></p>
+    {{ form.media_file }}
+    <br>
+    <button type="submit">Predict</button>
 
-                <div>
-                    <label class="block font-semibold mb-2 text-sm">Upload an Image or Video</label>
-                    {{ form.media_file }}
-                </div>
-
-                <button type="submit" class="w-full bg-indigo-600 text-white py-2 rounded-xl hover:bg-indigo-700 transition duration-200">
-                    🔍 Detect
-                </button>
-            </form>
-
-            {% if result %}
-                <div class="mt-6 p-4 rounded-xl border border-gray-300 bg-gray-50">
-                    <h2 class="text-xl font-bold text-center mb-2 text-indigo-700">🔎 Prediction Result</h2>
-                    <p class="text-center text-lg">
-                        <strong>Status:</strong>
-                        <span class="{% if result == 'Real' %}text-green-600{% elif result == 'Deepfake' %}text-red-600{% else %}text-yellow-600{% endif %}">
-                            {{ result }}
-                        </span>
-                    </p>
-                    <p class="text-center text-sm text-gray-500 mt-2">Confidence: {{ confidence|floatformat:2 }}</p>
-                </div>
-            {% endif %}
-        </div>
+    <div id="progress-bar">
+      <p>Processing... Please wait</p>
+      <progress id="progress" value="0" max="100"></progress>
     </div>
+  </form>
 
+  {% if uploaded_file_url %}
+    <div class="result-section">
+      <h2>Uploaded Media:</h2>
+      <div class="media-preview">
+        {% if uploaded_file_url|slice:"-4:" == ".mp4" %}
+          <video width="400" controls>
+            <source src="{{ uploaded_file_url }}" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        {% else %}
+          <img src="{{ uploaded_file_url }}" alt="Uploaded image">
+        {% endif %}
+      </div>
+    </div>
+  {% endif %}
 
+  {% if preview %}
+    <div class="result-section">
+      <h3>Video Thumbnail Preview:</h3>
+      <img src="{{ preview }}" alt="Video thumbnail">
+    </div>
+  {% endif %}
+
+  {% if result %}
+    <div class="result-section">
+      <h2>Prediction Result:</h2>
+      <p><strong>{{ result }}</strong></p>
+      <p class="confidence">Confidence: {{ confidence|floatformat:2 }}</p>
+    </div>
+  {% endif %}
+
+  {% if explanation %}
+    <div class="result-section explanation">
+      <h3>Explanation:</h3>
+      <p>{{ explanation }}</p>
+    </div>
+  {% endif %}
+
+  <script>
+    const form = document.getElementById('upload-form');
+    const progressBar = document.getElementById('progress-bar');
+    const progress = document.getElementById('progress');
+
+    form.addEventListener('submit', function () {
+      progressBar.style.display = 'block';
+      let value = 0;
+      const interval = setInterval(() => {
+        if (value < 95) {
+          value += 5;
+          progress.value = value;
+        } else {
+          clearInterval(interval);
+        }
+      }, 200);
+    });
+  </script>
 </body>
 </html>
