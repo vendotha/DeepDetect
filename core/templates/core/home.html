@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Deepfake Detector</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- TailwindCSS CDN for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800">
+    <div class="min-h-screen flex items-center justify-center">
+        <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-lg">
+            <h1 class="text-3xl font-bold mb-6 text-center text-indigo-600">🕵️‍♂️ Deepfake Detector</h1>
+
+            <form method="POST" enctype="multipart/form-data" class="space-y-6">
+                {% csrf_token %}
+
+                <div>
+                    <label class="block font-semibold mb-2 text-sm">Upload an Image or Video</label>
+                    {{ form.media_file }}
+                </div>
+
+                <button type="submit" class="w-full bg-indigo-600 text-white py-2 rounded-xl hover:bg-indigo-700 transition duration-200">
+                    🔍 Detect
+                </button>
+            </form>
+
+            {% if result %}
+                <div class="mt-6 p-4 rounded-xl border border-gray-300 bg-gray-50">
+                    <h2 class="text-xl font-bold text-center mb-2 text-indigo-700">🔎 Prediction Result</h2>
+                    <p class="text-center text-lg">
+                        <strong>Status:</strong>
+                        <span class="{% if result == 'Real' %}text-green-600{% elif result == 'Deepfake' %}text-red-600{% else %}text-yellow-600{% endif %}">
+                            {{ result }}
+                        </span>
+                    </p>
+                    <p class="text-center text-sm text-gray-500 mt-2">Confidence: {{ confidence|floatformat:2 }}</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+
+</body>
+</html>
