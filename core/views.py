@@ -1,6 +1,7 @@
 import os
 import mimetypes
 from django.shortcuts import render
+from .gemini_config import GEMINI_API_KEY
 from django.conf import settings
 from .forms import UploadForm
 from transformers import pipeline
@@ -13,7 +14,7 @@ import cv2
 detector_pipe = pipeline("image-classification", model="HrutikAdsare/deepfake-detector-faceforensics")
 
 # Configure Gemini
-genai.configure(api_key="AIzaSyDMV42jvwDykHB-Usfua9P1qRT78Fjs__U")
+genai.configure(api_key=GEMINI_API_KEY)
 
 
 def extract_thumbnail(video_path):

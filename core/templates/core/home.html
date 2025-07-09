@@ -1,160 +1,205 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
-  <meta charset="UTF-8">
-  <title>Deepfake Detector</title>
+  <meta charset="UTF-8" />
+  <title>🕵️ Deepfake Detector</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
+    :root {
+      --bg-light: #f4f6f8;
+      --text-light: #111;
+      --bg-dark: #121212;
+      --text-dark: #f4f4f4;
+      --card-bg-light: #fff;
+      --card-bg-dark: #1e1e1e;
+      --accent: #00c853;
+    }
+
+    [data-theme="light"] {
+      --bg: var(--bg-light);
+      --text: var(--text-light);
+      --card-bg: var(--card-bg-light);
+    }
+
+    [data-theme="dark"] {
+      --bg: var(--bg-dark);
+      --text: var(--text-dark);
+      --card-bg: var(--card-bg-dark);
+    }
+
     body {
+      margin: 0;
+      padding: 20px;
       font-family: 'Segoe UI', sans-serif;
-      background-color: #f0f4f8;
-      color: #333;
-      text-align: center;
-      padding: 40px;
+      background-color: var(--bg);
+      color: var(--text);
+      transition: background-color 0.3s, color 0.3s;
     }
 
-    h1 {
-      color: #2c3e50;
+    .container {
+      max-width: 800px;
+      margin: auto;
     }
 
-    form {
-      background: #fff;
-      padding: 20px;
-      border-radius: 12px;
-      display: inline-block;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    .card {
+      background-color: var(--card-bg);
+      border-radius: 14px;
+      padding: 25px;
       margin-top: 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.08);
     }
 
-    input[type="file"] {
-      margin: 10px 0;
-      font-size: 16px;
-    }
-
-    button {
-      padding: 10px 20px;
-      background-color: #2980b9;
-      color: white;
-      font-size: 16px;
-      border: none;
+    button, select {
+      padding: 14px 22px;
+      font-size: 17px;
       border-radius: 8px;
+      border: none;
       cursor: pointer;
-      margin-top: 10px;
     }
 
-    button:hover {
-      background-color: #2471a3;
+    button[type="submit"] {
+      background-color: var(--accent);
+      color: white;
+      font-weight: bold;
+      width: 100%;
     }
 
-    .result-section {
-      margin-top: 30px;
-      padding: 20px;
-      background-color: #ffffff;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.05);
-      max-width: 700px;
-      margin-left: auto;
-      margin-right: auto;
+    .toggle-container {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      align-items: center;
     }
 
-    .media-preview img,
-    .media-preview video {
+    .toggle-theme {
+      font-size: 22px;
+      background: none;
+      border: none;
+    }
+
+    .media-preview {
       max-width: 100%;
-      border-radius: 10px;
+      border-radius: 12px;
       margin-top: 15px;
     }
 
-    .confidence {
-      font-weight: bold;
-      color: #2c3e50;
-    }
-
-    #progress-bar {
-      margin-top: 20px;
+    .loading-overlay {
       display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background-color: rgba(0,0,0,0.6);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      font-size: 20px;
+      flex-direction: column;
     }
 
-    progress {
+    .spinner {
+      border: 6px solid #f3f3f3;
+      border-top: 6px solid var(--accent);
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
+      margin-bottom: 15px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0); }
+      100% { transform: rotate(360deg); }
+    }
+
+    input[type="file"] {
+      padding: 14px;
       width: 100%;
-      height: 20px;
+      font-size: 16px;
     }
 
-    .explanation {
-      text-align: left;
-      margin-top: 20px;
+    .emoji-label {
+      font-size: 20px;
+      margin-right: 6px;
     }
   </style>
 </head>
 <body>
-  <h1>Deepfake Detector 🔍</h1>
+  <div class="loading-overlay" id="loading">
+    <div class="spinner"></div>
+    <div>Processing... Please wait ⏳</div>
+  </div>
 
-  <form method="post" enctype="multipart/form-data" id="upload-form">
-    {% csrf_token %}
-    <p><strong>Select an image or video to analyze:</strong></p>
-    {{ form.media_file }}
-    <br>
-    <button type="submit">Predict</button>
-
-    <div id="progress-bar">
-      <p>Processing... Please wait</p>
-      <progress id="progress" value="0" max="100"></progress>
+  <div class="container">
+    <div class="toggle-container">
+      <button onclick="toggleTheme()" class="toggle-theme" title="Toggle Theme" id="theme-icon">🌞</button>
     </div>
-  </form>
 
-  {% if uploaded_file_url %}
-    <div class="result-section">
-      <h2>Uploaded Media:</h2>
-      <div class="media-preview">
-        {% if uploaded_file_url|slice:"-4:" == ".mp4" %}
-          <video width="400" controls>
-            <source src="{{ uploaded_file_url }}" type="video/mp4">
+    <h1 id="title">🕵️ Deepfake Detector</h1>
+
+    <form method="post" enctype="multipart/form-data" onsubmit="showLoader()">
+      {% csrf_token %}
+      <div class="card">
+        <label><span class="emoji-label">📤</span><span id="select-label">Select a Photo or Video:</span></label><br><br>
+        {{ form.media_file }}
+        <br><br>
+        <button type="submit" id="predict-btn">🔍 Predict</button>
+      </div>
+    </form>
+
+    {% if uploaded_file_url %}
+      <div class="card">
+        <h3><span class="emoji-label">🖼️</span><span id="uploaded-label">Uploaded Media:</span></h3>
+        {% if preview %}
+          <img src="{{ preview }}" class="media-preview" />
+        {% elif uploaded_file_url|slice:"-4:" == ".mp4" %}
+          <video controls class="media-preview">
+            <source src="{{ uploaded_file_url }}" type="video/mp4" />
             Your browser does not support the video tag.
           </video>
         {% else %}
-          <img src="{{ uploaded_file_url }}" alt="Uploaded image">
+          <img src="{{ uploaded_file_url }}" class="media-preview" />
         {% endif %}
       </div>
-    </div>
-  {% endif %}
+    {% endif %}
 
-  {% if preview %}
-    <div class="result-section">
-      <h3>Video Thumbnail Preview:</h3>
-      <img src="{{ preview }}" alt="Video thumbnail">
-    </div>
-  {% endif %}
+    {% if result %}
+      <div class="card">
+        <h3><span class="emoji-label">📊</span><span id="prediction-label">Model Prediction:</span></h3>
+        <p>
+          {% if result|lower == "real" %}
+            ✅ <span id="real-label">The media is predicted to be</span> <strong>REAL</strong>.
+          {% else %}
+            ❌ <span id="fake-label">The media is predicted to be</span> <strong>FAKE</strong>.
+          {% endif %}
+          <br><br>
+          🧠 <strong id="confidence-label">Confidence:</strong> {{ confidence|floatformat:2 }}%
+        </p>
+      </div>
+    {% endif %}
 
-  {% if result %}
-    <div class="result-section">
-      <h2>Prediction Result:</h2>
-      <p><strong>{{ result }}</strong></p>
-      <p class="confidence">Confidence: {{ confidence|floatformat:2 }}</p>
-    </div>
-  {% endif %}
-
-  {% if explanation %}
-    <div class="result-section explanation">
-      <h3>Explanation:</h3>
-      <p>{{ explanation }}</p>
-    </div>
-  {% endif %}
+    {% if explanation %}
+      <div class="card">
+        <h3><span class="emoji-label">💬</span><span id="why-label">Why It’s {{ result|upper }}:</span></h3>
+        <div style="white-space: pre-wrap;" id="explanation-text">{{ explanation|linebreaks }}</div>
+      </div>
+    {% endif %}
+  </div>
 
   <script>
-    const form = document.getElementById('upload-form');
-    const progressBar = document.getElementById('progress-bar');
-    const progress = document.getElementById('progress');
+    function toggleTheme() {
+      const html = document.documentElement;
+      const icon = document.getElementById("theme-icon");
+      const isDark = html.getAttribute("data-theme") === "dark";
+      html.setAttribute("data-theme", isDark ? "light" : "dark");
+      icon.textContent = isDark ? "🌞" : "🌜";
+    }
 
-    form.addEventListener('submit', function () {
-      progressBar.style.display = 'block';
-      let value = 0;
-      const interval = setInterval(() => {
-        if (value < 95) {
-          value += 5;
-          progress.value = value;
-        } else {
-          clearInterval(interval);
-        }
-      }, 200);
-    });
+    function showLoader() {
+      document.getElementById("loading").style.display = "flex";
+    }
+
+
   </script>
 </body>
 </html>
