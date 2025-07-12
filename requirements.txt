@@ -1,3 +1,4 @@
+opencv-python
 django
 torch
 transformers
