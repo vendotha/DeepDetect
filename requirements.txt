@@ -4,3 +4,4 @@ transformers
 pillow
 sentencepiece
 gunicorn
+google-generative-ai
