@@ -11,7 +11,7 @@ import io
 import cv2
 
 # Load Hugging Face pipeline
-detector_pipe = pipeline("image-classification", model="HrutikAdsare/deepfake-detector-faceforensics")
+detector_pipe = pipeline("image-classification", model="nateraw/face-forensics")
 
 # Configure Gemini
 genai.configure(api_key=GEMINI_API_KEY)
