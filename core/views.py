@@ -10,10 +10,14 @@ from PIL import Image
 import io
 import cv2
 
-# Load Hugging Face pipeline
-detector_pipe = pipeline("image-classification", model="nateraw/face-forensics")
+# ✅ Load Hugging Face pipeline with your private token
+detector_pipe = pipeline(
+    "image-classification",
+    model="HrutikAdsare/deepfake-detector-faceforensics",
+    use_auth_token="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"
+)
 
-# Configure Gemini
+# ✅ Configure Gemini
 genai.configure(api_key=GEMINI_API_KEY)
 
 
@@ -48,6 +52,7 @@ def home(request):
         form = UploadForm()
 
     return render(request, 'core/home.html', {'form': form})
+
 
 def analyze(request):
     # Initialize all variables with default values
@@ -107,7 +112,7 @@ def analyze(request):
                     f"{result.lower()}. Avoid technical terms. The explanation should sound like a human is saying it "
                     "and not an AI. Don't include any uncertain language. Be sure and confident. The points should be easy "
                     "for anyone to understand, even without education. Do not mention anything about the model, AI, or probabilities. "
-                    "Just say why it's {result.lower()}."
+                    f"Just say why it's {result.lower()}."
                 )
                 gemini_response = gemini_model.generate_content([gemini_input, gemini_prompt])
                 explanation = gemini_response.text
