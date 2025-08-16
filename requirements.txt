@@ -6,3 +6,4 @@ transformers
 pillow
 python-dotenv
 google-generativeai
+opencv-python
