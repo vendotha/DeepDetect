@@ -13,7 +13,7 @@ import io
 # -------------------------------
 # Load Hugging Face pipeline from LOCAL path
 # -------------------------------
-# Avoid double "DeepDetect-main" and fix Windows backslashes
+# Avoid double "deepfake_detector-main" and fix Windows backslashes
 model_path = os.path.join(settings.BASE_DIR, "deepfake-detector-faceforensics")
 model_path = model_path.replace("\\", "/")
 
