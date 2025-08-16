@@ -1,7 +1,8 @@
-django
+Django
+djangorestframework
 torch
+torchvision
 transformers
 pillow
-sentencepiece
+python-dotenv
 google-generativeai
-opencv-python
