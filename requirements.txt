@@ -1,0 +1,7 @@
+django
+torch
+transformers
+pillow
+sentencepiece
+google-generativeai
+opencv-python

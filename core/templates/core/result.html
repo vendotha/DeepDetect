@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <title>🕵️ DeepDetect - Analysis Results</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      /* Light Theme */
+      --bg-light: #fafafa;
+      --surface-light: #ffffff;
+      --text-primary-light: #1f2937;
+      --text-secondary-light: #6b7280;
+      --accent-light: #2563eb;
+      --accent-hover-light: #1d4ed8;
+      --success-light: #10b981;
+      --danger-light: #ef4444;
+      --warning-light: #f59e0b;
+      --border-light: #e5e7eb;
+
+      /* Dark Theme */
+      --bg-dark: #1a1f2e;
+      --surface-dark: #252b3d;
+      --text-primary-dark: #f8fafc;
+      --text-secondary-dark: #94a3b8;
+      --accent-dark: #3b82f6;
+      --accent-hover-dark: #60a5fa;
+      --success-dark: #34d399;
+      --danger-dark: #f87171;
+      --warning-dark: #fbbf24;
+      --border-dark: #374151;
+    }
+
+    [data-theme="light"] {
+      --bg: var(--bg-light);
+      --surface: var(--surface-light);
+      --text-primary: var(--text-primary-light);
+      --text-secondary: var(--text-secondary-light);
+      --accent: var(--accent-light);
+      --accent-hover: var(--accent-hover-light);
+      --success: var(--success-light);
+      --danger: var(--danger-light);
+      --warning: var(--warning-light);
+      --border: var(--border-light);
+    }
+
+    [data-theme="dark"] {
+      --bg: var(--bg-dark);
+      --surface: var(--surface-dark);
+      --text-primary: var(--text-primary-dark);
+      --text-secondary: var(--text-secondary-dark);
+      --accent: var(--accent-dark);
+      --accent-hover: var(--accent-hover-dark);
+      --success: var(--success-dark);
+      --danger: var(--danger-dark);
+      --warning: var(--warning-dark);
+      --border: var(--border-dark);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      transition: all 0.3s ease;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+
+
+    .banner {
+      background: linear-gradient(135deg, var(--surface) 0%, var(--bg) 100%);
+      backdrop-filter: blur(15px);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+    }
+
+    .banner-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 2rem;
+    }
+
+    .nav-brand {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .nav-actions {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .theme-toggle, .back-btn {
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: 50px;
+      padding: 0.75rem 1rem;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--text-primary);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      text-decoration: none;
+    }
+
+    .theme-toggle:hover, .back-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+      border-color: var(--accent);
+    }
+
+    .back-btn {
+      font-weight: 600;
+    }
+
+    .results-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem;
+      display: grid;
+      grid-template-columns: 1fr;
+      grid-template-rows: auto auto 1fr;
+      gap: 2rem;
+      min-height: calc(100vh - 100px);
+    }
+
+    .prediction-section {
+      grid-column: 1;
+      grid-row: 1;
+    }
+
+    .content-section {
+      grid-column: 1;
+      grid-row: 2;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      min-height: 500px;
+    }
+
+    .result-card {
+      background: var(--surface);
+      border-radius: 24px;
+      padding: 2.5rem;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+      border: 1px solid var(--border);
+      transition: all 0.3s ease;
+      text-align: center;
+    }
+
+    .media-card, .analysis-card {
+      background: var(--surface);
+      border-radius: 24px;
+      padding: 2.5rem;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+      border: 1px solid var(--border);
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .prediction-result {
+      font-size: 3rem;
+      font-weight: 900;
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    .prediction-real {
+      color: var(--success);
+      text-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+    }
+
+    .prediction-fake {
+      color: var(--danger);
+      text-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+    }
+
+    .confidence-section {
+      margin: 2rem 0;
+    }
+
+    .confidence-label {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: var(--text-secondary);
+    }
+
+    .confidence-bar {
+      background: var(--border);
+      border-radius: 50px;
+      height: 20px;
+      overflow: hidden;
+      margin-bottom: 1rem;
+      position: relative;
+    }
+
+    .confidence-fill {
+      height: 100%;
+      border-radius: 50px;
+      transition: width 1s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .confidence-fill::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      animation: shimmer 2s infinite;
+    }
+
+    @keyframes shimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+
+    .confidence-fill.high {
+      background: linear-gradient(90deg, var(--success), #34d399);
+    }
+
+    .confidence-fill.medium {
+      background: linear-gradient(90deg, var(--warning), #fbbf24);
+    }
+
+    .confidence-fill.low {
+      background: linear-gradient(90deg, var(--danger), #f87171);
+    }
+
+    .confidence-percentage {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+
+    .prediction-details {
+      background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-top: 2rem;
+      border-left: 4px solid var(--accent);
+    }
+
+    [data-theme="dark"] .prediction-details {
+      background: linear-gradient(135deg, #374151, #4b5563);
+    }
+
+    .media-preview {
+      max-width: 100%;
+      max-height: 400px;
+      border-radius: 16px;
+      margin-bottom: 1rem;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+      object-fit: contain;
+    }
+
+    .media-info {
+      background: var(--bg);
+      border-radius: 12px;
+      padding: 1rem;
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+
+    .analysis-content {
+      flex: 1;
+      line-height: 1.8;
+      font-size: 1rem;
+      color: var(--text-primary);
+    }
+
+    .analysis-content h4 {
+      color: var(--accent);
+      margin: 1.5rem 0 0.5rem 0;
+      font-size: 1.1rem;
+    }
+
+    .analysis-content p {
+      margin-bottom: 1rem;
+    }
+
+    .status-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-top: 1rem;
+    }
+
+    .status-real {
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--success);
+      border: 2px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .status-fake {
+      background: rgba(239, 68, 68, 0.1);
+      color: var(--danger);
+      border: 2px solid rgba(239, 68, 68, 0.2);
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      margin-top: 2rem;
+    }
+
+    .btn {
+      padding: 1rem 2rem;
+      font-size: 1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+      color: white;
+      box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+    }
+
+    .btn-secondary {
+      background: var(--surface);
+      color: var(--text-primary);
+      border: 2px solid var(--border);
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+
+    @media (max-width: 1024px) {
+      .content-section {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
+
+      .results-container {
+        padding: 1rem;
+      }
+
+      .prediction-result {
+        font-size: 2.5rem;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .banner-content {
+        padding: 0 1rem;
+      }
+
+      .nav-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .media-card, .analysis-card, .result-card {
+        padding: 1.5rem;
+      }
+
+      .prediction-result {
+        font-size: 2rem;
+      }
+
+      .card-header {
+        font-size: 1.2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="banner">
+    <div class="banner-content">
+      <a href="/" class="nav-brand">🕵️ DeepDetect</a>
+      <div class="nav-actions">
+        <a href="/" class="back-btn">
+          <span>←</span>
+          <span>New Analysis</span>
+        </a>
+        <button class="theme-toggle" onclick="toggleTheme()" id="theme-toggle">
+          <span id="theme-icon">🌞</span>
+          <span id="theme-text">Light</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="results-container">
+    <!-- Prediction Section (Top) -->
+    <div class="prediction-section">
+      <div class="result-card">
+        <div class="card-header">
+          <span>🎯</span>
+          <span>Detection Result</span>
+        </div>
+
+        <div class="prediction-result {% if result|lower == 'real' %}prediction-real{% else %}prediction-fake{% endif %}">
+          {% if result|lower == "real" %}
+            ✅ {{ result|upper }}
+          {% else %}
+            ❌ {{ result|upper }}
+          {% endif %}
+        </div>
+
+        <div class="confidence-section">
+          <div class="confidence-label">Detection Confidence</div>
+          <div class="confidence-bar">
+            <div class="confidence-fill {% if confidence >= 0.80 %}high{% elif confidence >= 0.30 %}medium{% else %}low{% endif %}"
+                 style="width: {% widthratio confidence 1 100 %}%"></div>
+          </div>
+          <div class="confidence-percentage">{% widthratio confidence 1 100 %}%</div>
+        </div>
+
+        <div class="status-indicator {% if result|lower == 'real' %}status-real{% else %}status-fake{% endif %}">
+          <span>{% if result|lower == "real" %}🛡️{% else %}⚠️{% endif %}</span>
+          <span>
+            {% if result|lower == "real" %}
+              Media appears to be authentic
+            {% else %}
+              Potential deepfake detected
+            {% endif %}
+          </span>
+        </div>
+
+        <div class="prediction-details">
+          <strong>Analysis Summary:</strong><br>
+          {% if result|lower == "real" %}
+            Our AI model found no significant indicators of digital manipulation or deepfake characteristics in this media.
+          {% else %}
+            Our AI model detected patterns consistent with deepfake or digitally manipulated content.
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Content Section (Bottom - Split) -->
+    <div class="content-section">
+      <!-- Left: Media Display -->
+      <div class="media-card">
+        <div class="card-header">
+          <span>🖼️</span>
+          <span>Analyzed Media</span>
+        </div>
+
+        {% if uploaded_file_url %}
+          {% if preview %}
+    {% if uploaded_file_url|slice:"-4:" == ".mp4" %}
+        <video controls class="media-preview">
+            <source src="{{ uploaded_file_url }}" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    {% else %}
+        <img src="{{ preview|default:uploaded_file_url }}" class="media-preview" alt="Uploaded media">
+    {% endif %}
+{% elif uploaded_file_url %}
+    <img src="{{ uploaded_file_url }}" class="media-preview" alt="Uploaded media">
+{% else %}
+    <div class="media-error">No media available for display</div>
+{% endif %}
+
+
+        {% endif %}
+      </div>
+
+      <!-- Right: AI Analysis -->
+      <div class="analysis-card">
+        <div class="card-header">
+
+          <span>Detailed Analysis</span>
+        </div>
+
+        <div class="analysis-content">
+          {% if explanation %}
+            {{ explanation|linebreaks }}
+          {% else %}
+            <h4>🔍 Detection Process:</h4>
+            <p>Our advanced model analyzed your media using multiple detection techniques including facial landmark analysis, temporal consistency checks, and artifact detection.</p>
+
+            <h4>🧠 Key Findings:</h4>
+            <p>
+              {% if result|lower == "real" %}
+                • Natural facial movements and expressions detected<br>
+                • Consistent lighting and shadow patterns<br>
+                • No anomalous artifacts or digital signatures<br>
+                • Temporal coherence maintained throughout
+              {% else %}
+                • Irregular facial feature patterns detected<br>
+                • Inconsistent lighting or texture artifacts<br>
+                • Potential digital manipulation signatures<br>
+                • Anomalous temporal inconsistencies found
+              {% endif %}
+            </p>
+
+            <h4>📊 Confidence Level:</h4>
+            <p>Based on our analysis, we are {% widthratio confidence 1 100 %}% confident in this assessment. This confidence level is determined by the consistency of detection signals across multiple AI models.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function toggleTheme() {
+      const html = document.documentElement;
+      const icon = document.getElementById("theme-icon");
+      const text = document.getElementById("theme-text");
+      const isDark = html.getAttribute("data-theme") === "dark";
+
+      html.setAttribute("data-theme", isDark ? "light" : "dark");
+      icon.textContent = isDark ? "🌞" : "🌙";
+      text.textContent = isDark ? "Light" : "Dark";
+
+      localStorage.setItem('theme', isDark ? 'light' : 'dark');
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      // Load theme
+      const savedTheme = localStorage.getItem('theme') || 'light';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+
+      const icon = document.getElementById("theme-icon");
+      const text = document.getElementById("theme-text");
+
+      if (savedTheme === 'dark') {
+        icon.textContent = "🌙";
+        text.textContent = "Dark";
+      }
+
+      // Set background color based on result
+      const resultElement = document.querySelector('.prediction-result');
+      if (resultElement) {
+        const isReal = resultElement.textContent.toLowerCase().includes('real');
+        document.body.classList.add(isReal ? 'result-real' : 'result-fake');
+      }
+
+      // Animate confidence bar
+      setTimeout(() => {
+        const confidenceFill = document.querySelector('.confidence-fill');
+        if (confidenceFill) {
+          confidenceFill.style.transition = 'width 2s ease-out';
+        }
+      }, 500);
+    });
+  </script>
+</body>
+</html>
